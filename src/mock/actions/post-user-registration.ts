@@ -1,17 +1,27 @@
 import { api, events } from "..";
 import Auth0 from "../../types";
-import { PostChallengeOptions } from "../api";
+import { PostUserRegistrationOptions } from "../api";
 
 type Handler = (
   event: Auth0.Events.PostUserRegistration,
   api: Auth0.API.PostUserRegistration
 ) => Promise<void>;
 
+export type PostUserRegistrationAssertions = {
+  cache: Auth0.API.Cache;
+};
+
+export type PostUserRegistrationAction = {
+  event: Auth0.Events.PostUserRegistration;
+  simulate: (handler: Handler) => Promise<void>;
+  assertions: PostUserRegistrationAssertions;
+};
+
 export function postUserRegistration({
   cache,
   ...attributes
 }: Parameters<typeof events.postUserRegistration>[0] &
-  Omit<PostChallengeOptions, "user" | "request"> = {}) {
+  PostUserRegistrationOptions = {}): PostUserRegistrationAction {
   const event = events.postUserRegistration(attributes);
 
   const { implementation, state } = api.postUserRegistration({ cache });
@@ -20,25 +30,15 @@ export function postUserRegistration({
     await handler(event, implementation);
   }
 
-  return new Proxy(
-    {
-      event,
-      simulate,
-    },
-    {
-      get(target, prop) {
-        if (typeof prop !== "string") {
-          return;
-        }
-
-        if (prop in target) {
-          return target[prop as keyof typeof target];
-        }
-
-        if (prop in state) {
-          return state[prop as keyof typeof state];
-        }
-      },
+  const assertions: PostUserRegistrationAssertions = {
+    get cache() {
+      return state.cache;
     }
-  );
+  };
+
+  return {
+    event,
+    simulate,
+    assertions
+  };
 }

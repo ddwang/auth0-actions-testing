@@ -1,17 +1,27 @@
 import { api, events } from "..";
 import Auth0 from "../../types";
-import { PostChallengeOptions } from "../api";
+import { SendPhoneMessageOptions } from "../api";
 
 type Handler = (
   event: Auth0.Events.SendPhoneMessage,
   api: Auth0.API.SendPhoneMessage
 ) => Promise<void>;
 
+export type SendPhoneMessageAssertions = {
+  cache: Auth0.API.Cache;
+};
+
+export type SendPhoneMessageAction = {
+  event: Auth0.Events.SendPhoneMessage;
+  simulate: (handler: Handler) => Promise<void>;
+  assertions: SendPhoneMessageAssertions;
+};
+
 export function sendPhoneMessage({
   cache,
   ...attributes
 }: Parameters<typeof events.sendPhoneMessage>[0] &
-  Omit<PostChallengeOptions, "user" | "request"> = {}) {
+  SendPhoneMessageOptions = {}): SendPhoneMessageAction {
   const event = events.sendPhoneMessage(attributes);
 
   const { implementation, state } = api.sendPhoneMessage({ cache });
@@ -20,25 +30,15 @@ export function sendPhoneMessage({
     await handler(event, implementation);
   }
 
-  return new Proxy(
-    {
-      event,
-      simulate,
-    },
-    {
-      get(target, prop) {
-        if (typeof prop !== "string") {
-          return;
-        }
-
-        if (prop in target) {
-          return target[prop as keyof typeof target];
-        }
-
-        if (prop in state) {
-          return state[prop as keyof typeof state];
-        }
-      },
+  const assertions: SendPhoneMessageAssertions = {
+    get cache() {
+      return state.cache;
     }
-  );
+  };
+
+  return {
+    event,
+    simulate,
+    assertions
+  };
 }

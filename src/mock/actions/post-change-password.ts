@@ -1,17 +1,27 @@
 import { api, events } from "..";
 import Auth0 from "../../types";
-import { PostChallengeOptions } from "../api";
+import { PostChangePasswordOptions } from "../api";
 
 type Handler = (
   event: Auth0.Events.PostChangePassword,
   api: Auth0.API.PostChangePassword
 ) => Promise<void>;
 
+export type PostChangePasswordAssertions = {
+  cache: Auth0.API.Cache;
+};
+
+export type PostChangePasswordAction = {
+  event: Auth0.Events.PostChangePassword;
+  simulate: (handler: Handler) => Promise<void>;
+  assertions: PostChangePasswordAssertions;
+};
+
 export function postChangePassword({
   cache,
   ...attributes
 }: Parameters<typeof events.postChangePassword>[0] &
-  Omit<PostChallengeOptions, "user" | "request"> = {}) {
+  PostChangePasswordOptions = {}): PostChangePasswordAction {
   const event = events.postChangePassword(attributes);
 
   const { implementation, state } = api.postChangePassword({ cache });
@@ -20,25 +30,15 @@ export function postChangePassword({
     await handler(event, implementation);
   }
 
-  return new Proxy(
-    {
-      event,
-      simulate,
-    },
-    {
-      get(target, prop) {
-        if (typeof prop !== "string") {
-          return;
-        }
-
-        if (prop in target) {
-          return target[prop as keyof typeof target];
-        }
-
-        if (prop in state) {
-          return state[prop as keyof typeof state];
-        }
-      },
+  const assertions: PostChangePasswordAssertions = {
+    get cache() {
+      return state.cache;
     }
-  );
+  };
+
+  return {
+    event,
+    simulate,
+    assertions
+  };
 }

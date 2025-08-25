@@ -1,11 +1,29 @@
 import { api, events } from "..";
 import Auth0 from "../../types";
-import { PostLoginOptions } from "../api";
+import { PostLoginOptions, PostLoginState } from "../api";
 
 type Handler = (
   event: Auth0.Events.PostLogin,
   api: Auth0.API.PostLogin
 ) => Promise<void>;
+
+export type PostLoginAssertions = {
+  accessTokenClaims: Record<string, unknown>;
+  accessTokenScopes: string[];
+  idTokenClaims: Record<string, unknown>;
+  userMetadata: Record<string, any>;
+  appMetadata: Record<string, any>;
+  accessDenied: false | { reason: string };
+  multifactorEnabled: false | { provider: string; options?: any };
+  redirectUrl: URL | null;
+  cache: Auth0.API.Cache;
+};
+
+export type PostLoginAction = {
+  event: Auth0.Events.PostLogin;
+  simulate: (handler: Handler) => Promise<void>;
+  assertions: PostLoginAssertions;
+};
 
 export function postLogin({
   cache,
@@ -13,7 +31,7 @@ export function postLogin({
   executedRules,
   ...attributes
 }: Parameters<typeof events.postLogin>[0] &
-  Omit<PostLoginOptions, "user" | "request"> = {}) {
+  Omit<PostLoginOptions, "user" | "request"> = {}): PostLoginAction {
   const event = events.postLogin(attributes);
 
   const { request, user } = event;
@@ -30,25 +48,40 @@ export function postLogin({
     await handler(event, implementation);
   }
 
-  return new Proxy(
-    {
-      event,
-      simulate,
+  // Create assertions object that provides test-specific access to state
+  const assertions: PostLoginAssertions = {
+    get accessTokenClaims() {
+      return { ...state.accessToken.claims };
     },
-    {
-      get(target, prop) {
-        if (typeof prop !== "string") {
-          return;
-        }
-
-        if (prop in target) {
-          return target[prop as keyof typeof target];
-        }
-
-        if (prop in state) {
-          return state[prop as keyof typeof state];
-        }
-      },
+    get accessTokenScopes() {
+      return [...state.accessToken.scopes];
+    },
+    get idTokenClaims() {
+      return { ...state.idToken.claims };
+    },
+    get userMetadata() {
+      return { ...state.user.user_metadata };
+    },
+    get appMetadata() {
+      return { ...state.user.app_metadata };
+    },
+    get accessDenied() {
+      return state.access.denied;
+    },
+    get multifactorEnabled() {
+      return state.multifactor.enabled;
+    },
+    get redirectUrl() {
+      return state.redirect?.url || null;
+    },
+    get cache() {
+      return state.cache;
     }
-  );
+  };
+
+  return {
+    event,
+    simulate,
+    assertions
+  };
 }
