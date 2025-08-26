@@ -17,6 +17,7 @@ export type PostLoginAssertions = {
   multifactorEnabled: false | { provider: string; options?: any };
   redirectUrl: URL | null;
   cache: Auth0.API.Cache;
+  primaryUserId: string;
 };
 
 export type PostLoginAction = {
@@ -76,6 +77,9 @@ export function postLogin({
     },
     get cache() {
       return state.cache;
+    },
+    get primaryUserId() {
+      return state.authentication.primaryUserId;
     }
   };
 

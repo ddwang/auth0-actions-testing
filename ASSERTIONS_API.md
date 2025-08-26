@@ -36,6 +36,7 @@ action.assertions.accessDenied         // false | { reason: string }
 action.assertions.multifactorEnabled   // false | { provider: string; options?: any }
 action.assertions.redirectUrl          // URL | null
 action.assertions.cache                // Auth0.API.Cache
+action.assertions.primaryUserId         // string
 ```
 
 ## Usage Examples
@@ -120,6 +121,27 @@ test('should enable MFA for admin users', async () => {
 });
 ```
 
+### Testing Primary User ID
+
+```javascript
+test('should access and modify primary user ID', async () => {
+  const action = mock.actions.postLogin({
+    user: mock.user({ user_id: 'auth0|123456' })
+  });
+
+  // Initial primary user ID matches the user's ID
+  strictEqual(action.assertions.primaryUserId, 'auth0|123456');
+
+  await action.simulate(async (event, api) => {
+    // Change the primary user ID (e.g., for account linking)
+    api.authentication.setPrimaryUser('auth0|primary-account');
+  });
+
+  // Check primary user ID was updated
+  strictEqual(action.assertions.primaryUserId, 'auth0|primary-account');
+});
+```
+
 ## Benefits of This Design
 
 1. **No Confusion**: Developers won't mistake test functionality for Auth0's actual API
@@ -151,7 +173,7 @@ action.assertions.idTokenClaims['namespace/claim']
 - `accessTokenClaims`, `accessTokenScopes`, `idTokenClaims`
 - `userMetadata`, `appMetadata`
 - `accessDenied`, `multifactorEnabled`
-- `redirectUrl`, `cache`
+- `redirectUrl`, `cache`, `primaryUserId`
 
 #### PreUserRegistration
 - `userMetadata`, `appMetadata`
