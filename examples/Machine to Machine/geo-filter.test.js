@@ -13,10 +13,10 @@ test("Filter access based on continent code", async (t) => {
 
     await action.simulate(onExecuteCredentialsExchange);
 
-    ok(action.access.denied, "Expected access to be denied");
+    ok(action.assertions.accessDenied, "Expected access to be denied");
 
     deepStrictEqual(
-      action.access.denied,
+      action.assertions.accessDenied,
       {
         code: "invalid_request",
         reason: "Access from North America is not allowed.",
@@ -32,6 +32,6 @@ test("Filter access based on continent code", async (t) => {
 
     await action.simulate(onExecuteCredentialsExchange);
 
-    ok(!action.access.denied, "Expected access to be allowed");
+    ok(!action.assertions.accessDenied, "Expected access to be allowed");
   });
 });

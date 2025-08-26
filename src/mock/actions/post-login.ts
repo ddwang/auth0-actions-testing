@@ -18,6 +18,7 @@ export type PostLoginAssertions = {
   redirectUrl: URL | null;
   cache: Auth0.API.Cache;
   primaryUserId: string;
+  promptRendered: Auth0.PromptState | null;
 };
 
 export type PostLoginAction = {
@@ -80,6 +81,9 @@ export function postLogin({
     },
     get primaryUserId() {
       return state.authentication.primaryUserId;
+    },
+    get promptRendered() {
+      return state.prompt.rendered;
     }
   };
 

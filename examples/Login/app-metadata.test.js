@@ -16,7 +16,7 @@ test("setting app metadata", async (t) => {
 
     await action.simulate(onExecutePostLogin);
 
-    const { lucky_number } = action.user.app_metadata;
+    const { lucky_number } = action.assertions.appMetadata;
 
     ok(
       typeof lucky_number === "number",
@@ -39,7 +39,7 @@ test("setting app metadata", async (t) => {
 
     await action.simulate(onExecutePostLogin);
 
-    const { lucky_number } = action.user.app_metadata;
+    const { lucky_number } = action.assertions.appMetadata;
 
     strictEqual(
       lucky_number,

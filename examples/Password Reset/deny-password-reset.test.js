@@ -14,10 +14,10 @@ test("deny with a password reset", async (t) => {
 
     await action.simulate(onPostChallenge);
 
-    ok(action.access.denied, "Unexpected to be denied");
+    ok(action.assertions.accessDenied, "Unexpected to be denied");
 
     strictEqual(
-      action.access.denied.reason,
+      action.assertions.accessDenied.reason,
       "Go away!",
       "Unexpected denial reason"
     );
@@ -31,6 +31,6 @@ test("deny with a password reset", async (t) => {
 
     await action.simulate(onPostChallenge);
 
-    ok(!action.access.denied, "Unexpectedly denied");
+    ok(!action.assertions.accessDenied, "Unexpectedly denied");
   });
 });

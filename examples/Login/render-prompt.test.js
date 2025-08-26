@@ -11,10 +11,10 @@ test("rendering a prompt", async (t) => {
 
     await action.simulate(onExecutePostLogin);
 
-    const { rendered } = action.prompt;
+    const rendered = action.assertions.promptRendered;
 
     strictEqual(
-      rendered.promptId,
+      rendered?.promptId,
       "test-prompt-id",
       "Expected prompt ID to be `test-prompt-id`"
     );

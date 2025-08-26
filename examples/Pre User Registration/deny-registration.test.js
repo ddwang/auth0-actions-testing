@@ -14,10 +14,10 @@ test("denies user registration", async (t) => {
 
     await action.simulate(onExecutePreUserRegistration);
 
-    ok(action.access.denied, "Unexpected to be denied");
+    ok(action.assertions.accessDenied, "Unexpected to be denied");
 
     deepStrictEqual(
-      action.access.denied,
+      action.assertions.accessDenied,
       {
         code: "invalid_domain",
         reason: "External email domains are not allowed",
@@ -34,6 +34,6 @@ test("denies user registration", async (t) => {
 
     await action.simulate(onExecutePreUserRegistration);
 
-    ok(!action.access.denied, "Unexpectedly denied");
+    ok(!action.assertions.accessDenied, "Unexpectedly denied");
   });
 });
