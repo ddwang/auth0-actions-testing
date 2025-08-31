@@ -20,7 +20,8 @@
     "build:watch": "tsc --watch",
     "build:clean": "rm -rf dist; npm run build",
     "build:copy-declarations": "cd src && rsync -Rv $(find . -name '*.d.ts') ../dist/",
-    "release": "npm run build:clean && [ -d \"dist\" ] && npm publish --access public"
+    "release": "npm run build:clean && [ -d \"dist\" ] && npm publish --access public",
+    "prepare": "npm run build"
   },
   "contributors": [
     "Pete Nicholls <pnicholls@kilterset.com>",
