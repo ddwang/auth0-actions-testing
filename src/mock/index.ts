@@ -1,6 +1,7 @@
 export * from "./authentication";
 export * from "./client";
 export * from "./connection";
+export * from "./define";
 export * from "./identity";
 export * from "./organization";
 export * from "./phone-message-options";
